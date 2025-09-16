@@ -22,8 +22,14 @@ jobs:
           cp index.html CRAFTROICIP.html site/ || true
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4.3.4
-        with:
-          branch: gh-pages
-          folder: site
-          clean: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          cd site
+          git init
+          git add .
+          git commit -m "Deploy site to gh-pages"
+          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git master:gh-pages
