@@ -236,6 +236,24 @@
               <label for="labor-hours-cycle" class="form-label"
                 >Labor Hours / Cycle</label
               >
+        <div class="mt-6 p-4 bg-neutral-100 rounded-lg">
+          <h3 class="text-lg font-medium text-[#4a5a63] mb-2">Estimated Reductions with Automation</h3>
+          <p class="text-sm text-[#4a5a63] mb-4">Enter the expected percentage reductions after automating (use facility estimates).</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label for="labor-savings-pct" class="form-label">Labor Savings (%)</label>
+              <input type="number" id="labor-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
+            </div>
+            <div>
+              <label for="water-savings-pct" class="form-label">Water Savings (%)</label>
+              <input type="number" id="water-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
+            </div>
+            <div>
+              <label for="chemical-savings-pct" class="form-label">Chemical Savings (%)</label>
+              <input type="number" id="chemical-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
+            </div>
+          </div>
+        </div>
               <input
                 type="number"
                 id="labor-hours-cycle"
@@ -376,8 +394,18 @@
           </h2>
 
           <div class="flex justify-center gap-4 mb-6">
-            <button id="reset-btn" class="px-4 py-2 bg-gray-200 text-[#4a5a63] rounded hover:bg-gray-300">Reset</button>
-            <button id="export-btn" class="px-4 py-2 bg-[#d67f5c] text-white rounded hover:opacity-95">Export CSV</button>
+            <button
+              id="reset-btn"
+              class="px-4 py-2 bg-gray-200 text-[#4a5a63] rounded hover:bg-gray-300"
+            >
+              Reset
+            </button>
+            <button
+              id="export-btn"
+              class="px-4 py-2 bg-[#d67f5c] text-white rounded hover:opacity-95"
+            >
+              Export CSV
+            </button>
           </div>
 
           <div
@@ -396,7 +424,7 @@
               class="stat-card bg-[#eaddce] border border-[#d67f5c] lg:col-span-1"
             >
               <h3 class="stat-title">
-                Est. Annual Savings w/ Automation (25%)
+                Est. Annual Savings w/ Automation
               </h3>
               <p
                 id="estimated-annual-savings"
@@ -451,6 +479,9 @@
           "water-cost-gallon",
           "chemical-cost-cycle",
           "estimated-system-cost",
+          "labor-savings-pct",
+          "water-savings-pct",
+          "chemical-savings-pct",
         ];
 
         const outputs = {
@@ -504,7 +535,16 @@
             outputs.annualLaborCost +
             outputs.annualWaterCost +
             outputs.annualChemicalCost;
-          const estimatedSavings = totalAnnualCIPCost * 0.25;
+
+          // compute savings per category using provided percentages
+          const laborSavings =
+            outputs.annualLaborCost * ((values["labor-savings-pct"] || 0) / 100);
+          const waterSavings =
+            outputs.annualWaterCost * ((values["water-savings-pct"] || 0) / 100);
+          const chemicalSavings =
+            outputs.annualChemicalCost * ((values["chemical-savings-pct"] || 0) / 100);
+
+          const estimatedSavings = laborSavings + waterSavings + chemicalSavings;
 
           let paybackMonths = 0;
           if (estimatedSavings > 0) {
@@ -629,20 +669,37 @@
           });
 
           const totalAnnual = outputs.totalAnnualCost.textContent || "";
-          const estimatedSavings = outputs.estimatedAnnualSavings.textContent || "";
+          const estimatedSavings =
+            outputs.estimatedAnnualSavings.textContent || "";
+          const laborPct = document.getElementById("labor-savings-pct")?.value || "";
+          const waterPct = document.getElementById("water-savings-pct")?.value || "";
+          const chemicalPct = document.getElementById("chemical-savings-pct")?.value || "";
+
+          // compute numeric savings for export
+          const laborSavingsNum = (parseFloat(document.getElementById('labor-hours-cycle')?.value || 0) * parseFloat(document.getElementById('labor-cost-hour')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(laborPct) || 0) / 100);
+          const waterSavingsNum = (parseFloat(document.getElementById('water-usage-cycle')?.value || 0) * parseFloat(document.getElementById('water-cost-gallon')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(waterPct) || 0) / 100);
+          const chemicalSavingsNum = (parseFloat(document.getElementById('chemical-cost-cycle')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(chemicalPct) || 0) / 100);
           const paybackText = outputs.paybackPeriod.textContent || "";
           const paybackMonths = paybackText.replace(/[^0-9\.]/g, "") || "";
 
           const rows = [
             ["Field", "Value"],
             ...Object.entries(values),
+            ["Labor Savings (%)", laborPct],
+            ["Water Savings (%)", waterPct],
+            ["Chemical Savings (%)", chemicalPct],
+            ["Labor Savings (USD)", laborSavingsNum.toFixed(2)],
+            ["Water Savings (USD)", waterSavingsNum.toFixed(2)],
+            ["Chemical Savings (USD)", chemicalSavingsNum.toFixed(2)],
             ["Total Current Annual Cost", totalAnnual],
             ["Estimated Annual Savings", estimatedSavings],
             ["Payback Period (Months)", paybackMonths],
           ];
 
           const csv = rows
-            .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+            .map((r) =>
+              r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")
+            )
             .join("\r\n");
           const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
           const url = URL.createObjectURL(blob);
