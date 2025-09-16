@@ -79,409 +79,388 @@
         color: #d67f5c;
         margin-top: 0.5rem; /* mt-2 */
       }
-
-      .checklist-item {
-        display: flex;
-        align-items: center;
-        padding: 1rem; /* p-4 */
-        border: 1px solid #e5e7eb; /* neutral-200 */
-        border-radius: 0.5rem; /* rounded-lg */
-        transition: background-color 0.12s ease;
-      }
-      .checklist-item:hover {
-        background-color: #f9fafb; /* neutral-50 */
-      }
-
-      .checklist-item input {
-        width: 1.25rem; /* w-5 */
-        height: 1.25rem; /* h-5 */
-        background-color: #f3f4f6; /* neutral-100 */
-        border: 1px solid #d1d5db; /* neutral-300 */
-        border-radius: 0.25rem; /* rounded */
-        accent-color: #d67f5c; /* makes checkbox color in supporting browsers */
-      }
-      .checklist-item input:focus {
-        box-shadow: 0 0 0 4px rgba(214, 127, 92, 0.12);
-        outline: none;
-      }
-
-      .checklist-item label {
-        margin-left: 0.75rem; /* ms-3 */
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500; /* font-medium */
-        color: #4a5a63;
-        flex: 1 1 auto;
-      }
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Craft Automation ROI Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chosen Palette: Craft Automation Palette (inspired by uploaded image: Headers (#d67f5c), Text (#4a5a63)) -->
+  <!-- Application Structure Plan: A multi-step, guided-form structure was chosen over a direct spreadsheet replication to improve usability. The flow guides the user from self-assessment (Checklist) to data input (Current Process Costs) and finally to results (ROI & Visualization). This linear progression is more intuitive, reduces cognitive load, and tells a story—helping users understand *why* they should consider a CIP system before they calculate the *what*. The final step combines key metrics with a bar chart for an impactful summary, making the financial benefits immediately clear. -->
+  <!-- Visualization & Content Choices: 
+    - Checklist: Report Info -> Areas of operational inefficiency. Goal -> User self-assessment. Viz/Presentation -> Interactive HTML checkboxes. Interaction -> A dynamic message appears after two or more checks, prompting the user to continue. Justification -> Provides immediate feedback and a clear call-to-action. Library/Method -> Vanilla JS.
+    - ROI Inputs: Report Info -> Cost factors (labor, water, etc.). Goal -> Gather user's current operational data. Viz/Presentation -> Grouped HTML form inputs with clear labels and placeholder notes. Interaction -> User enters their own data. Justification -> Organizes data entry into a logical, form-based flow that is more user-friendly than a spreadsheet grid. Library/Method -> HTML, Tailwind CSS.
+    - ROI Outputs: Report Info -> Calculated annual costs, savings, payback. Goal -> Inform the user of financial implications. Viz/Presentation -> Large, distinct "stat cards" for key metrics. Interaction -> Values update in real-time as inputs are changed. Justification -> Highlights the most important results for quick comprehension. Library/Method -> Vanilla JS.
+    - Cost Comparison Chart: Report Info -> Total Annual Costs vs. Savings. Goal -> Visually compare costs and savings. Viz/Presentation -> Bar Chart. Interaction -> The chart dynamically red-raws when input values change. Justification -> A visual comparison is more impactful and easier to understand than numbers alone, clearly illustrating the value proposition. Library/Method -> Chart.js (Canvas).
+    - System Cost Table: Report Info -> Estimated system costs. Goal -> Provide reference data for the investment cost. Viz/Presentation -> A clean, styled HTML table. Interaction -> User can reference this table to inform their "Estimated System Cost" input. Justification -> Integrates necessary reference material directly into the user's workflow. Library/Method -> HTML, Tailwind CSS.
+  -->
+  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+  <style>
+    .font-bungee {
+      font-family: 'Bungee', sans-serif;
+    }
+    .font-poppins {
+      font-family: 'Poppins', sans-serif;
+    }
+    .form-input {
+      @apply w-full p-3 bg-neutral-100 border border-neutral-300 rounded-lg text-neutral-900 text-base focus:ring-[#d67f5c] focus:border-[#d67f5c] transition-colors;
+    }
+    .form-label {
+      @apply block mb-2 text-sm font-medium text-[#4a5a63];
+    }
+    .stat-card {
+      @apply bg-white p-6 rounded-lg shadow-md text-center flex flex-col justify-center;
+    }
+    .stat-title {
+      @apply text-sm font-medium text-[#4a5a63] uppercase tracking-wider;
+    }
+    .stat-value {
+      @apply text-4xl font-bold text-[#d67f5c] mt-2;
+    }
+    .checklist-item {
+      @apply flex items-center p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors;
+    }
+    .checklist-item input {
+      @apply w-5 h-5 text-[#d67f5c] bg-neutral-100 border-neutral-300 rounded focus:ring-[#d67f5c] focus:ring-2;
+    }
+    .checklist-item label {
+      @apply w-full ms-3 text-sm font-medium text-[#4a5a63];
+    }
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 300px;
+      max-height: 400px;
+    }
+    @media (min-width: 768px) {
       .chart-container {
-        position: relative;
-        width: 100%;
-        max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
-        height: 300px;
-        max-height: 400px;
+        height: 400px;
       }
-      @media (min-width: 768px) {
-        .chart-container {
-          height: 400px;
-        }
-      }
-    </style>
-  </head>
-  <body class="bg-white text-[#4a5a63] font-poppins">
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
-      <header class="text-center mb-12">
-        <!-- This is the direct image link from your Imgur album. -->
-        <h1 class="text-4xl md:text-5xl font-bungee text-[#d67f5c]">
-          Clean-In-Place (CIP) ROI Calculator
-        </h1>
-        <p class="mt-4 text-lg text-[#4a5a63] max-w-3xl mx-auto">
-          Use this tool to assess your current cleaning process and calculate
-          the potential return on investment from automating with a CIP system.
-        </p>
-      </header>
+    }
+  </style>
+</head>
+<body class="bg-white text-[#4a5a63] font-poppins">
 
-      <main class="space-y-16">
-        <!-- Step 1: Checklist -->
-        <section id="step1" class="bg-neutral-50 p-8 rounded-xl shadow-md">
-          <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
-            Step 1: The Essential Clean-In-Place Checklist
-          </h2>
-          <p class="text-[#4a5a63] mb-6">
-            Review your current process. If two or more of the following apply
-            to your organization, you could be losing significant time and
-            money.
-          </p>
-          <div id="checklist" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="checklist-item">
-              <input id="check1" type="checkbox" value="" />
-              <label for="check1"
-                >Manual chemical injection is still in use.</label
-              >
-            </div>
-            <div class="checklist-item">
-              <input id="check2" type="checkbox" value="" />
-              <label for="check2"
-                >No real-time tracking or cleaning logs.</label
-              >
-            </div>
-            <div class="checklist-item">
-              <input id="check3" type="checkbox" value="" />
-              <label for="check3"
-                >Cleaning cycles are inconsistent or operator dependent.</label
-              >
-            </div>
-            <div class="checklist-item">
-              <input id="check4" type="checkbox" value="" />
-              <label for="check4"
-                >Excessive water, chemicals, or energy usage per cycle.</label
-              >
-            </div>
-            <div class="checklist-item">
-              <input id="check5" type="checkbox" value="" />
-              <label for="check5"
-                >Audits or compliance are difficult or time consuming.</label
-              >
-            </div>
-            <div class="checklist-item">
-              <input id="check6" type="checkbox" value="" />
-              <label for="check6"
-                >CIP system not integrated with PLC/SCADA for monitoring.</label
-              >
-            </div>
-            <div class="checklist-item col-span-1 md:col-span-2">
-              <input id="check7" type="checkbox" value="" />
-              <label for="check7"
-                >Maintenance or troubleshooting requires significant
-                downtime.</label
-              >
-            </div>
-          </div>
-          <div
-            id="checklist-result"
-            class="hidden mt-6 p-4 bg-orange-100 text-orange-800 border border-orange-200 rounded-lg"
-          >
-            <p class="font-semibold">
-              Based on your selections, your facility could see significant
-              benefits from an automated CIP system. Continue to the calculator
-              below to quantify the potential savings.
-            </p>
-          </div>
-        </section>
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        
+    <header class="text-center mb-12">
+      <!-- This is the direct image link from your Imgur album. -->
+       <h1 class="text-4xl md:text-5xl font-bungee text-[#d67f5c]">Clean-In-Place (CIP) ROI Calculator</h1>
+      <p class="mt-4 text-lg text-[#4a5a63] max-w-3xl mx-auto">Use this tool to assess your current cleaning process and calculate the potential return on investment from automating with a CIP system.</p>
+    </header>
 
-        <!-- Step 2: ROI Calculator Inputs -->
-        <section id="step2" class="bg-neutral-50 p-8 rounded-xl shadow-md">
-          <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
-            Step 2: Calculate Your Current Cleaning Costs
-          </h2>
-          <p class="text-[#4a5a63] mb-6">
-            Enter your current operational data to estimate your annual costs.
-            Use averages where exact numbers aren't available.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label for="cleaning-cycles-week" class="form-label"
-                >Cleaning Cycles / Week</label
-              >
-              <input
-                type="number"
-                id="cleaning-cycles-week"
-                class="form-input"
-                placeholder="e.g., 7"
-                value="7"
-              />
-            </div>
-            <div>
-              <label for="labor-hours-cycle" class="form-label"
-                >Labor Hours / Cycle</label
-              >
-        <div class="mt-6 p-4 bg-neutral-100 rounded-lg">
-          <h3 class="text-lg font-medium text-[#4a5a63] mb-2">Estimated Reductions with Automation</h3>
-          <p class="text-sm text-[#4a5a63] mb-4">Enter the expected percentage reductions after automating (use facility estimates).</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label for="labor-savings-pct" class="form-label">Labor Savings (%)</label>
-              <input type="number" id="labor-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
-            </div>
-            <div>
-              <label for="water-savings-pct" class="form-label">Water Savings (%)</label>
-              <input type="number" id="water-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
-            </div>
-            <div>
-              <label for="chemical-savings-pct" class="form-label">Chemical Savings (%)</label>
-              <input type="number" id="chemical-savings-pct" class="form-input" placeholder="e.g., 25" value="25" min="0" max="100">
-            </div>
+    <main class="space-y-16">
+
+      <!-- Step 1: Checklist -->
+      <section id="step1" class="bg-neutral-50 p-8 rounded-xl shadow-md">
+        <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">Step 1: The Essential Clean-In-Place Checklist</h2>
+        <p class="text-[#4a5a63] mb-6">Review your current process. If two or more of the following apply to your organization, you could be losing significant time and money.</p>
+        <div id="checklist" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="checklist-item">
+            <input id="check1" type="checkbox" value="">
+            <label for="check1">Manual chemical injection is still in use.</label>
+          </div>
+          <div class="checklist-item">
+            <input id="check2" type="checkbox" value="">
+            <label for="check2">No real-time tracking or cleaning logs.</label>
+          </div>
+          <div class="checklist-item">
+            <input id="check3" type="checkbox" value="">
+            <label for="check3">Cleaning cycles are inconsistent or operator dependent.</label>
+          </div>
+          <div class="checklist-item">
+            <input id="check4" type="checkbox" value="">
+            <label for="check4">Excessive water, chemicals, or energy usage per cycle.</label>
+          </div>
+          <div class="checklist-item">
+            <input id="check5" type="checkbox" value="">
+            <label for="check5">Audits or compliance are difficult or time consuming.</label>
+          </div>
+          <div class="checklist-item">
+            <input id="check6" type="checkbox" value="">
+            <label for="check6">CIP system not integrated with PLC/SCADA for monitoring.</label>
+          </div>
+          <div class="checklist-item col-span-1 md:col-span-2">
+            <input id="check7" type="checkbox" value="">
+            <label for="check7">Maintenance or troubleshooting requires significant downtime.</label>
           </div>
         </div>
-              <input
-                type="number"
-                id="labor-hours-cycle"
-                class="form-input"
-                placeholder="e.g., 1.5"
-                value="1.5"
-              />
-            </div>
-            <div>
-              <label for="labor-cost-hour" class="form-label"
-                >Labor Cost / Hour ($)</label
-              >
-              <input
-                type="number"
-                id="labor-cost-hour"
-                class="form-input"
-                placeholder="e.g., 35"
-                value="35"
-              />
-            </div>
-            <div>
-              <label for="water-usage-cycle" class="form-label"
-                >Water Usage / Cycle (Gallons)</label
-              >
-              <input
-                type="number"
-                id="water-usage-cycle"
-                class="form-input"
-                placeholder="e.g., 1000"
-                value="1000"
-              />
-            </div>
-            <div>
-              <label for="water-cost-gallon" class="form-label"
-                >Water Cost / Gallon ($)</label
-              >
-              <input
-                type="number"
-                id="water-cost-gallon"
-                class="form-input"
-                placeholder="e.g., 0.005"
-                step="0.001"
-                value="0.005"
-              />
-            </div>
-            <div>
-              <label for="chemical-cost-cycle" class="form-label"
-                >Chemical Cost / Cycle ($)</label
-              >
-              <input
-                type="number"
-                id="chemical-cost-cycle"
-                class="form-input"
-                placeholder="e.g., 100"
-                value="100"
-              />
-            </div>
+        <div id="checklist-result" class="hidden mt-6 p-4 bg-orange-100 text-orange-800 border border-orange-200 rounded-lg">
+          <p class="font-semibold">Based on your selections, your facility could see significant benefits from an automated CIP system. Continue to the calculator below to quantify the potential savings.</p>
+        </div>
+      </section>
+
+      <!-- Step 2: ROI Calculator Inputs -->
+      <section id="step2" class="bg-neutral-50 p-8 rounded-xl shadow-md">
+        <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">Step 2: Calculate Your Current Cleaning Costs</h2>
+        <p class="text-[#4a5a63] mb-6">Enter your current operational data to estimate your annual costs. Use averages where exact numbers aren't available.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div>
+            <label for="cleaning-cycles-week" class="form-label">Cleaning Cycles / Week</label>
+            <input type="number" id="cleaning-cycles-week" class="form-input" placeholder="e.g., 7" value="7">
           </div>
-        </section>
-
-        <!-- Step 3: Estimated System Cost -->
-        <section id="step3" class="bg-neutral-50 p-8 rounded-xl shadow-md">
-          <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
-            Step 3: Estimate Your Investment
-          </h2>
-          <p class="text-[#4a5a63] mb-6">
-            Use the table below as a guide to estimate the cost for a new
-            system, then enter your estimate. Installation and commissioning can
-            often double the equipment cost.
-          </p>
-
-          <div class="overflow-x-auto mb-6">
-            <table class="w-full text-sm text-left text-[#4a5a63]">
-              <thead class="text-xs uppercase bg-neutral-100">
-                <tr>
-                  <th scope="col" class="px-6 py-3 rounded-l-lg">
-                    System Type / Capacity
-                  </th>
-                  <th scope="col" class="px-6 py-3">
-                    Approx. Equipment Only Cost
-                  </th>
-                  <th scope="col" class="px-6 py-3 rounded-r-lg">
-                    Estimated Installed Cost
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-white border-b">
-                  <td class="px-6 py-4 font-medium text-[#4a5a63]">
-                    Small Manual / Portable Skid
-                  </td>
-                  <td class="px-6 py-4">$5,000 - $12,000</td>
-                  <td class="px-6 py-4">$15,000 - $30,000</td>
-                </tr>
-                <tr class="bg-white border-b">
-                  <td class="px-6 py-4 font-medium text-[#4a5a63]">
-                    Medium Single‐Tank CIP (~200-500 gal)
-                  </td>
-                  <td class="px-6 py-4">$30,000 - $50,000</td>
-                  <td class="px-6 py-4">$60,000 - $90,000</td>
-                </tr>
-                <tr class="bg-white border-b">
-                  <td class="px-6 py-4 font-medium text-[#4a5a63]">
-                    Two/Three-Tank Skid (Semi/Fully Auto)
-                  </td>
-                  <td class="px-6 py-4">$40,000 - $80,000</td>
-                  <td class="px-6 py-4">$100,000 - $180,000</td>
-                </tr>
-                <tr class="bg-white">
-                  <td class="px-6 py-4 font-medium text-[#4a5a63]">
-                    Large / High Capacity Fully Automated
-                  </td>
-                  <td class="px-6 py-4">$150,000 - $500,000+</td>
-                  <td class="px-6 py-4">$250,000 - $1,000,000+</td>
-                </tr>
-              </tbody>
-            </table>
+          <div>
+            <label for="labor-hours-cycle" class="form-label">Labor Hours / Cycle</label>
+            <input type="number" id="labor-hours-cycle" class="form-input" placeholder="e.g., 1.5" value="1.5">
           </div>
-
-          <div class="max-w-xs">
-            <label for="estimated-system-cost" class="form-label"
-              >Your Estimated System Cost ($)</label
-            >
-            <input
-              type="number"
-              id="estimated-system-cost"
-              class="form-input"
-              placeholder="e.g., 75000"
-              value="75000"
-            />
+          <div>
+            <label for="labor-cost-hour" class="form-label">Labor Cost / Hour ($)</label>
+            <input type="number" id="labor-cost-hour" class="form-input" placeholder="e.g., 35" value="35">
           </div>
-        </section>
-
-        <!-- Step 4: Results -->
-        <section id="step4">
-          <h2 class="text-3xl font-bungee text-[#d67f5c] text-center mb-8">
-            Your ROI Results
-          </h2>
-
-          <div class="flex justify-center gap-4 mb-6">
-            <button
-              id="reset-btn"
-              class="px-4 py-2 bg-gray-200 text-[#4a5a63] rounded hover:bg-gray-300"
-            >
-              Reset
-            </button>
-            <button
-              id="export-btn"
-              class="px-4 py-2 bg-[#d67f5c] text-white rounded hover:opacity-95"
-            >
-              Export CSV
-            </button>
+          <div>
+            <label for="water-usage-cycle" class="form-label">Water Usage / Cycle (Gallons)</label>
+            <input type="number" id="water-usage-cycle" class="form-input" placeholder="e.g., 1000" value="1000">
           </div>
-
-          <div
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
-          >
-            <div class="stat-card lg:col-span-1">
-              <h3 class="stat-title">Total Current Annual Cost</h3>
-              <p
-                id="total-annual-cost"
-                class="stat-value font-bungee text-[#d67f5c]"
-              >
-                $0
-              </p>
-            </div>
-            <div
-              class="stat-card bg-[#eaddce] border border-[#d67f5c] lg:col-span-1"
-            >
-              <h3 class="stat-title">
-                Est. Annual Savings w/ Automation
-              </h3>
-              <p
-                id="estimated-annual-savings"
-                class="stat-value font-bungee text-[#d67f5c]"
-              >
-                $0
-              </p>
-            </div>
-            <div class="stat-card lg:col-span-1">
-              <h3 class="stat-title">Payback Period</h3>
-              <p
-                id="payback-period"
-                class="stat-value font-bungee text-[#d67f5c]"
-              >
-                0 <span class="text-2xl">Months</span>
-              </p>
-            </div>
+          <div>
+            <label for="water-cost-gallon" class="form-label">Water Cost / Gallon ($)</label>
+            <input type="number" id="water-cost-gallon" class="form-input" placeholder="e.g., 0.005" step="0.001" value="0.005">
           </div>
-
-          <div class="bg-neutral-50 p-8 rounded-xl shadow-md">
-            <h3 class="text-2xl font-bold text-[#d67f5c] mb-1 text-center">
-              Cost Comparison: Current vs. Automated
-            </h3>
-            <p class="text-[#4a5a63] mb-6 text-center">
-              This chart visualizes your current annual costs against the
-              projected costs after implementing an automated CIP system,
-              highlighting your potential savings.
-            </p>
-            <div class="chart-container">
-              <canvas id="roiChart"></canvas>
-            </div>
+          <div>
+            <label for="chemical-cost-cycle" class="form-label">Chemical Cost / Cycle ($)</label>
+            <input type="number" id="chemical-cost-cycle" class="form-input" placeholder="e.g., 100" value="100">
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+            
+      <!-- Step 3: Estimated System Cost -->
+      <section id="step3" class="bg-neutral-50 p-8 rounded-xl shadow-md">
+        <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">Step 3: Estimate Your Investment</h2>
+        <p class="text-[#4a5a63] mb-6">Use the table below as a guide to estimate the cost for a new system, then enter your estimate. Installation and commissioning can often double the equipment cost.</p>
+                
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full text-sm text-left text-[#4a5a63]">
+            <thead class="text-xs uppercase bg-neutral-100">
+              <tr>
+                <th scope="col" class="px-6 py-3 rounded-l-lg">System Type / Capacity</th>
+                <th scope="col" class="px-6 py-3">Approx. Equipment Only Cost</th>
+                <th scope="col" class="px-6 py-3 rounded-r-lg">Estimated Installed Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="bg-white border-b">
+                <td class="px-6 py-4 font-medium text-[#4a5a63]">Small Manual / Portable Skid</td>
+                <td class="px-6 py-4">$5,000 - $12,000</td>
+                <td class="px-6 py-4">$15,000 - $30,000</td>
+              </tr>
+              <tr class="bg-white border-b">
+                <td class="px-6 py-4 font-medium text-[#4a5a63]">Medium Single‐Tank CIP (~200-500 gal)</td>
+                <td class="px-6 py-4">$30,000 - $50,000</td>
+                <td class="px-6 py-4">$60,000 - $90,000</td>
+              </tr>
+              <tr class="bg-white border-b">
+                <td class="px-6 py-4 font-medium text-[#4a5a63]">Two/Three-Tank Skid (Semi/Fully Auto)</td>
+                <td class="px-6 py-4">$40,000 - $80,000</td>
+                <td class="px-6 py-4">$100,000 - $180,000</td>
+              </tr>
+              <tr class="bg-white">
+                <td class="px-6 py-4 font-medium text-[#4a5a63]">Large / High Capacity Fully Automated</td>
+                <td class="px-6 py-4">$150,000 - $500,000+</td>
+                <td class="px-6 py-4">$250,000 - $1,000,000+</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <footer class="text-center mt-16">
-        <p class="text-sm text-[#4a5a63]">
-          <strong>Disclaimer:</strong> This calculator is a general guide.
-          Results are estimates and will vary depending on your facility’s size,
-          operating conditions, and system design. Actual ROI may differ.
-        </p>
-      </footer>
-    </div>
+        <div class="max-w-xs">
+          <label for="estimated-system-cost" class="form-label">Your Estimated System Cost ($)</label>
+          <input type="number" id="estimated-system-cost" class="form-input" placeholder="e.g., 75000" value="75000">
+        </div>
+      </section>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const inputs = [
-          "cleaning-cycles-week",
-          "labor-hours-cycle",
-          "labor-cost-hour",
-          "water-usage-cycle",
+
+      <!-- Step 4: Results -->
+      <section id="step4">
+        <h2 class="text-3xl font-bungee text-[#d67f5c] text-center mb-8">Your ROI Results</h2>
+                
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div class="stat-card lg:col-span-1">
+            <h3 class="stat-title">Total Current Annual Cost</h3>
+            <p id="total-annual-cost" class="stat-value font-bungee text-[#d67f5c]">$0</p>
+          </div>
+          <div class="stat-card bg-[#eaddce] border border-[#d67f5c] lg:col-span-1">
+            <h3 class="stat-title">Est. Annual Savings w/ Automation (25%)</h3>
+            <p id="estimated-annual-savings" class="stat-value font-bungee text-[#d67f5c]">$0</p>
+          </div>
+          <div class="stat-card lg:col-span-1">
+            <h3 class="stat-title">Payback Period</h3>
+            <p id="payback-period" class="stat-value font-bungee text-[#d67f5c]">0 <span class="text-2xl">Months</span></p>
+          </div>
+        </div>
+
+        <div class="bg-neutral-50 p-8 rounded-xl shadow-md">
+          <h3 class="text-2xl font-bold text-[#d67f5c] mb-1 text-center">Cost Comparison: Current vs. Automated</h3>
+          <p class="text-[#4a5a63] mb-6 text-center">This chart visualizes your current annual costs against the projected costs after implementing an automated CIP system, highlighting your potential savings.</p>
+          <div class="chart-container">
+            <canvas id="roiChart"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="text-center mt-16">
+      <p class="text-sm text-[#4a5a63]"><strong>Disclaimer:</strong> This calculator is a general guide. Results are estimates and will vary depending on your facility’s size, operating conditions, and system design. Actual ROI may differ.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = [
+        'cleaning-cycles-week', 'labor-hours-cycle', 'labor-cost-hour',
+        'water-usage-cycle', 'water-cost-gallon', 'chemical-cost-cycle',
+        'estimated-system-cost'
+      ];
+
+      const outputs = {
+        annualLaborCost: 0,
+        annualWaterCost: 0,
+        annualChemicalCost: 0,
+        totalAnnualCost: document.getElementById('total-annual-cost'),
+        estimatedAnnualSavings: document.getElementById('estimated-annual-savings'),
+        paybackPeriod: document.getElementById('payback-period'),
+      };
+
+      const checklistItems = document.querySelectorAll('#checklist input[type="checkbox"]');
+      const checklistResult = document.getElementById('checklist-result');
+
+      let roiChart;
+
+      const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      };
+            
+      const calculateROI = () => {
+        const values = {};
+        inputs.forEach(id => {
+          const element = document.getElementById(id);
+          values[id] = parseFloat(element.value) || 0;
+        });
+
+        const annualCycles = values['cleaning-cycles-week'] * 52;
+
+        outputs.annualLaborCost = values['labor-hours-cycle'] * values['labor-cost-hour'] * annualCycles;
+        outputs.annualWaterCost = values['water-usage-cycle'] * values['water-cost-gallon'] * annualCycles;
+        outputs.annualChemicalCost = values['chemical-cost-cycle'] * annualCycles;
+
+        const totalAnnualCIPCost = outputs.annualLaborCost + outputs.annualWaterCost + outputs.annualChemicalCost;
+        const estimatedSavings = totalAnnualCIPCost * 0.25;
+                
+        let paybackMonths = 0;
+        if (estimatedSavings > 0) {
+          paybackMonths = values['estimated-system-cost'] / (estimatedSavings / 12);
+        }
+
+        outputs.totalAnnualCost.textContent = formatCurrency(totalAnnualCIPCost);
+        outputs.estimatedAnnualSavings.textContent = formatCurrency(estimatedSavings);
+                
+        if (isFinite(paybackMonths)) {
+          outputs.paybackPeriod.innerHTML = `${paybackMonths.toFixed(1)} <span class="text-2xl">Months</span>`;
+        } else {
+          outputs.paybackPeriod.innerHTML = `N/A`;
+        }
+                
+        updateChart(totalAnnualCIPCost, estimatedSavings);
+      };
+            
+      const handleChecklistChange = () => {
+        const checkedCount = Array.from(checklistItems).filter(item => item.checked).length;
+        if (checkedCount >= 2) {
+          checklistResult.classList.remove('hidden');
+        } else {
+          checklistResult.classList.add('hidden');
+        }
+      };
+
+      const createChart = () => {
+        const ctx = document.getElementById('roiChart').getContext('2d');
+        roiChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Current Annual Cost', 'Projected Annual Cost (Post-Automation)'],
+            datasets: [{
+              label: 'Cost',
+              data: [0, 0],
+              backgroundColor: [
+                'rgba(74, 90, 99, 0.8)',
+                'rgba(214, 127, 92, 0.8)',
+              ],
+              borderColor: [
+                'rgba(74, 90, 99, 1)',
+                'rgba(214, 127, 92, 1)',
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                      label += formatCurrency(context.parsed.y);
+                    }
+                    return label;
+                  }
+                }
+              }
+            }
+          }
+        });
+      };
+
+      const updateChart = (currentCost, savings) => {
+        const projectedCost = currentCost - savings;
+        roiChart.data.datasets[0].data[0] = currentCost;
+        roiChart.data.datasets[0].data[1] = projectedCost;
+        roiChart.update();
+      };
+
+      inputs.forEach(id => document.getElementById(id).addEventListener('input', calculateROI));
+      checklistItems.forEach(item => item.addEventListener('change', handleChecklistChange));
+
+      createChart();
+      calculateROI();
+    });
+  </script>
+</body>
+</html>
           "water-cost-gallon",
           "chemical-cost-cycle",
           "estimated-system-cost",
-          "labor-savings-pct",
-          "water-savings-pct",
-          "chemical-savings-pct",
         ];
 
         const outputs = {
@@ -535,16 +514,7 @@
             outputs.annualLaborCost +
             outputs.annualWaterCost +
             outputs.annualChemicalCost;
-
-          // compute savings per category using provided percentages
-          const laborSavings =
-            outputs.annualLaborCost * ((values["labor-savings-pct"] || 0) / 100);
-          const waterSavings =
-            outputs.annualWaterCost * ((values["water-savings-pct"] || 0) / 100);
-          const chemicalSavings =
-            outputs.annualChemicalCost * ((values["chemical-savings-pct"] || 0) / 100);
-
-          const estimatedSavings = laborSavings + waterSavings + chemicalSavings;
+          const estimatedSavings = totalAnnualCIPCost * 0.25;
 
           let paybackMonths = 0;
           if (estimatedSavings > 0) {
@@ -671,26 +641,12 @@
           const totalAnnual = outputs.totalAnnualCost.textContent || "";
           const estimatedSavings =
             outputs.estimatedAnnualSavings.textContent || "";
-          const laborPct = document.getElementById("labor-savings-pct")?.value || "";
-          const waterPct = document.getElementById("water-savings-pct")?.value || "";
-          const chemicalPct = document.getElementById("chemical-savings-pct")?.value || "";
-
-          // compute numeric savings for export
-          const laborSavingsNum = (parseFloat(document.getElementById('labor-hours-cycle')?.value || 0) * parseFloat(document.getElementById('labor-cost-hour')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(laborPct) || 0) / 100);
-          const waterSavingsNum = (parseFloat(document.getElementById('water-usage-cycle')?.value || 0) * parseFloat(document.getElementById('water-cost-gallon')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(waterPct) || 0) / 100);
-          const chemicalSavingsNum = (parseFloat(document.getElementById('chemical-cost-cycle')?.value || 0) * (parseFloat(document.getElementById('cleaning-cycles-week')?.value || 0) * 52)) * ((parseFloat(chemicalPct) || 0) / 100);
           const paybackText = outputs.paybackPeriod.textContent || "";
           const paybackMonths = paybackText.replace(/[^0-9\.]/g, "") || "";
 
           const rows = [
             ["Field", "Value"],
             ...Object.entries(values),
-            ["Labor Savings (%)", laborPct],
-            ["Water Savings (%)", waterPct],
-            ["Chemical Savings (%)", chemicalPct],
-            ["Labor Savings (USD)", laborSavingsNum.toFixed(2)],
-            ["Water Savings (USD)", waterSavingsNum.toFixed(2)],
-            ["Chemical Savings (USD)", chemicalSavingsNum.toFixed(2)],
             ["Total Current Annual Cost", totalAnnual],
             ["Estimated Annual Savings", estimatedSavings],
             ["Payback Period (Months)", paybackMonths],
