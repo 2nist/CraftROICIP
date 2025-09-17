@@ -1,0 +1,1 @@
+Place your icon PNG here as icon.png (preferably 512x512). Run `npm run icon:gen` to generate icon.ico for Windows packaging.

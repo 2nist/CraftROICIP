@@ -6,6 +6,7 @@ function createWindow () {
     width: 1200,
     height: 800,
     show: false,
+    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     webPreferences: {
       contextIsolation: true,
       sandbox: false
