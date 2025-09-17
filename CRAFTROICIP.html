@@ -4,8 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Craft Automation ROI Calculator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="desktop-app/offline.css" media="all" onload="document.documentElement.classList.add('offline-css-loaded')">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Fallback to local Chart.js when running offline (e.g., in Electron)
+      (function () {
+        if (typeof window.Chart === "undefined") {
+          var tried = [];
+          function tryLoad(srcs) {
+            if (!srcs || !srcs.length) return;
+            var src = srcs.shift();
+            tried.push(src);
+            try {
+              var s = document.createElement("script");
+              s.src = src;
+              s.onload = function () {
+                console.log("Loaded local Chart.js fallback from:", src);
+              };
+              s.onerror = function () {
+                if (srcs.length) {
+                  tryLoad(srcs);
+                } else {
+                  console.warn("Local Chart.js fallback not found. Tried:", tried);
+                }
+              };
+              document.head.appendChild(s);
+            } catch (e) {
+              console.warn("Chart.js fallback injection failed for", src, e);
+              if (srcs.length) tryLoad(srcs);
+            }
+          }
+          // First try packaged path, then dev path
+          tryLoad([
+            "node_modules/chart.js/dist/chart.umd.js",
+            "desktop-app/node_modules/chart.js/dist/chart.umd.js",
+          ]);
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -79,15 +116,7 @@
         color: #d67f5c;
         margin-top: 0.5rem; /* mt-2 */
       }
-      .checklist-item {
-        @apply flex items-center p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors;
-      }
-      .checklist-item input {
-        @apply w-5 h-5 text-[#d67f5c] bg-neutral-100 border-neutral-300 rounded focus:ring-[#d67f5c] focus:ring-2;
-      }
-      .checklist-item label {
-        @apply w-full ms-3 text-sm font-medium text-[#4a5a63];
-      }
+      /* checklist styles are provided by offline.css; keep minimal overrides here if needed */
       .chart-container {
         position: relative;
         width: 100%;
@@ -123,7 +152,7 @@
         text-align: center;
         margin-bottom: 3rem;
       }
-  /* Logo sits above title; no special overrides needed */
+      /* Logo sits above title; no special overrides needed */
       .header h1 {
         margin: 0;
         font-size: 2.5rem;
@@ -142,18 +171,18 @@
   </head>
   <body class="bg-[#F5E5D0] text-[#4a5a63] font-poppins">
     <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
-      <header class="header" style="text-align: center;">
-        <div class="logo-container" style="margin-bottom: 20px;">
+      <header class="header" style="text-align: center">
+        <div class="logo-container" style="margin-bottom: 20px">
           <img
             src="https://i.imgur.com/0S0JNXZ.png"
             alt="Craft Automation Logo"
             class="logo"
-            style="height: 100px; display: block; margin: 0 auto;"
+            style="height: 100px; display: block; margin: 0 auto"
           />
         </div>
-        <div style="clear: both;"></div>
-        <h1 class="header-text font-bungee" style="margin: 0;">
-          Craft-In-Place (CIP) ROI Calculator
+        <div style="clear: both"></div>
+        <h1 class="font-bungee" style="margin: 0">
+          Clean-In-Place (CIP) ROI Calculator
         </h1>
         <p class="mt-4 text-lg text-[#4a5a63] max-w-3xl mx-auto">
           Use this tool to assess your current cleaning process and calculate
@@ -163,7 +192,11 @@
 
       <main class="space-y-16">
         <!-- Step 1: Checklist -->
-  <section id="step1" class="p-8 rounded-xl shadow-md" style="background-color:#F2EBE1;">
+        <section
+          id="step1"
+          class="p-8 rounded-xl shadow-md"
+          style="background-color: #f2ebe1"
+        >
           <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
             Step 1: The Essential Clean-In-Place Checklist
           </h2>
@@ -230,7 +263,11 @@
         </section>
 
         <!-- Step 2: ROI Calculator Inputs -->
-  <section id="step2" class="p-8 rounded-xl shadow-md" style="background-color:#F2EBE1;">
+        <section
+          id="step2"
+          class="p-8 rounded-xl shadow-md"
+          style="background-color: #f2ebe1"
+        >
           <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
             Step 2: Calculate Your Current Cleaning Costs
           </h2>
@@ -316,7 +353,11 @@
         </section>
 
         <!-- Step 3: Estimated System Cost -->
-  <section id="step3" class="p-8 rounded-xl shadow-md" style="background-color:#F2EBE1;">
+        <section
+          id="step3"
+          class="p-8 rounded-xl shadow-md"
+          style="background-color: #f2ebe1"
+        >
           <h2 class="text-2xl font-bold text-[#d67f5c] mb-1">
             Step 3: Estimate Your Investment
           </h2>
@@ -430,7 +471,10 @@
             </div>
           </div>
 
-          <div class="p-8 rounded-xl shadow-md" style="background-color:#F2EBE1;">
+          <div
+            class="p-8 rounded-xl shadow-md"
+            style="background-color: #f2ebe1"
+          >
             <h3 class="text-2xl font-bold text-[#d67f5c] mb-1 text-center">
               Cost Comparison: Current vs. Automated
             </h3>
@@ -488,7 +532,8 @@
         );
         const checklistResult = document.getElementById("checklist-result");
 
-        let roiChart;
+  let roiChart;
+  const chartAvailable = () => typeof window.Chart !== "undefined";
         const defaultValues = {};
 
         // Initialize default values for reset
@@ -553,7 +598,13 @@
         };
 
         const createChart = () => {
-          const ctx = document.getElementById("roiChart").getContext("2d");
+          if (!chartAvailable()) {
+            console.warn("Chart.js not loaded - skipping chart init");
+            return;
+          }
+          const canvas = document.getElementById("roiChart");
+          if (!canvas) return;
+          const ctx = canvas.getContext("2d");
           roiChart = new Chart(ctx, {
             type: "bar",
             data: {
@@ -611,19 +662,10 @@
         };
 
         const updateChart = (currentCost, savings) => {
+          if (!roiChart) return;
           const projectedCost = currentCost - savings;
           roiChart.data.datasets[0].data = [currentCost, projectedCost];
           roiChart.update();
-        };
-
-        const resetInputs = () => {
-          inputs.forEach((id) => {
-            const el = document.getElementById(id);
-            if (el) el.value = defaultValues[id] || "";
-          });
-          checklistItems.forEach((item) => (item.checked = false));
-          handleChecklistChange();
-          calculateROI();
         };
 
         const exportResults = () => {
@@ -636,26 +678,18 @@
           const rows = [
             ["Field", "Value"],
             ...Object.entries(values),
+            ["Total Current Annual Cost", outputs.totalAnnualCost.textContent || ""],
+            ["Estimated Annual Savings", outputs.estimatedAnnualSavings.textContent || ""],
             [
-              "Total Current Annual Cost",
-              outputs.totalAnnualCost.textContent || "",
-            ][
-              ("Estimated Annual Savings",
-              outputs.estimatedAnnualSavings.textContent || "")
-            ][
-              ("Payback Period (Months)",
-              outputs.paybackPeriod.textContent.replace(/[^0-9.]/g, "") || "")
+              "Payback Period (Months)",
+              (outputs.paybackPeriod.textContent || "").replace(/[^0-9.]/g, ""),
             ],
           ];
 
           const csvContent = rows
-            .map((row) =>
-              row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")
-            )
+            .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
             .join("\r\n");
-          const blob = new Blob([csvContent], {
-            type: "text/csv;charset=utf-8;",
-          });
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
           const url = URL.createObjectURL(blob);
 
           const link = document.createElement("a");
@@ -682,7 +716,11 @@
           .getElementById("export-btn")
           ?.addEventListener("click", exportResults);
 
-        createChart();
+        if (chartAvailable()) {
+          createChart();
+        } else {
+          console.warn("Chart.js CDN unavailable - rendering without chart");
+        }
         calculateROI();
       });
     </script>

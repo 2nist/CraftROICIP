@@ -1,0 +1,38 @@
+{
+  "name": "desktop-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder -w",
+    "dist": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.craftautomation.ciproi",
+    "productName": "CIP ROI Calculator",
+    "files": [
+      "main.js",
+      "../CRAFTROICIP.html",
+      "../CRAFT_HORIZONTAL_LOGO_MP_edit.png",
+      "../index.html",
+      "offline.css",
+      "node_modules/chart.js/dist/chart.umd.js"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12"
+  }
+}
