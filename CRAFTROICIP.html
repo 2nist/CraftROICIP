@@ -3,46 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Craft Automation ROI Calculator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="desktop-app/offline.css" media="all" onload="document.documentElement.classList.add('offline-css-loaded')">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      // Fallback to local Chart.js when running offline (e.g., in Electron)
-      (function () {
-        if (typeof window.Chart === "undefined") {
-          var tried = [];
-          function tryLoad(srcs) {
-            if (!srcs || !srcs.length) return;
-            var src = srcs.shift();
-            tried.push(src);
-            try {
-              var s = document.createElement("script");
-              s.src = src;
-              s.onload = function () {
-                console.log("Loaded local Chart.js fallback from:", src);
-              };
-              s.onerror = function () {
-                if (srcs.length) {
-                  tryLoad(srcs);
-                } else {
-                  console.warn("Local Chart.js fallback not found. Tried:", tried);
-                }
-              };
-              document.head.appendChild(s);
-            } catch (e) {
-              console.warn("Chart.js fallback injection failed for", src, e);
-              if (srcs.length) tryLoad(srcs);
-            }
-          }
-          // First try packaged path, then dev path
-          tryLoad([
-            "node_modules/chart.js/dist/chart.umd.js",
-            "desktop-app/node_modules/chart.js/dist/chart.umd.js",
-          ]);
-        }
-      })();
-    </script>
+    <title>Craft Automation CIP ROI Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="offline.css"
+      media="all"
+      onload="document.documentElement.classList.add('offline-css-loaded')"
+      onerror="(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='desktop-app/offline.css';document.head.appendChild(l);})();"
+    />
+    <!-- Chart removed: no external scripts required -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -475,17 +445,34 @@
             class="p-8 rounded-xl shadow-md"
             style="background-color: #f2ebe1"
           >
-            <h3 class="text-2xl font-bold text-[#d67f5c] mb-1 text-center">
-              Cost Comparison: Current vs. Automated
+            <h3 class="text-2xl font-bold text-[#d67f5c] mb-4 text-center">
+              ROI Simple Benchmarks
             </h3>
-            <p class="text-[#4a5a63] mb-6 text-center">
-              This chart visualizes your current annual costs against the
-              projected costs after implementing an automated CIP system,
-              highlighting your potential savings.
-            </p>
-            <div class="chart-container">
-              <canvas id="roiChart"></canvas>
-            </div>
+            <ul class="text-[#4a5a63] space-y-3 max-w-3xl mx-auto">
+              <li>
+                <strong>&lt; 24 months (2 years)</strong>
+                &rarr; Very attractive. Most CFOs and plant managers are happy
+                here.
+              </li>
+              <li>
+                <strong>24–36 months (2–3 years)</strong>
+                &rarr; Acceptable / normal range for food &amp; beverage
+                equipment, especially if compliance, quality, or labor
+                savings/shortages are part of the benefit.
+              </li>
+              <li>
+                <strong>36–60 months (3–5 years)</strong>
+                &rarr; Sometimes acceptable for larger automation projects or
+                high-ticket utilities/energy systems, but you’ll need strong
+                strategic justification (compliance, sustainability,
+                throughput).
+              </li>
+              <li>
+                <strong>&gt; 5 years</strong>
+                &rarr; Rarely approved unless it’s mandatory (regulatory,
+                safety, sustainability mandate).
+              </li>
+            </ul>
           </div>
         </section>
       </main>
@@ -532,8 +519,7 @@
         );
         const checklistResult = document.getElementById("checklist-result");
 
-  let roiChart;
-  const chartAvailable = () => typeof window.Chart !== "undefined";
+        // Chart removed; keep simple calculations only
         const defaultValues = {};
 
         // Initialize default values for reset
@@ -587,7 +573,7 @@
             ? `${paybackMonths.toFixed(1)} <span class="text-2xl">Months</span>`
             : "N/A";
 
-          updateChart(totalAnnualCIPCost, estimatedSavings);
+          // Chart removed
         };
 
         const handleChecklistChange = () => {
@@ -597,76 +583,7 @@
           checklistResult.classList.toggle("hidden", checkedCount < 2);
         };
 
-        const createChart = () => {
-          if (!chartAvailable()) {
-            console.warn("Chart.js not loaded - skipping chart init");
-            return;
-          }
-          const canvas = document.getElementById("roiChart");
-          if (!canvas) return;
-          const ctx = canvas.getContext("2d");
-          roiChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: [
-                "Current Annual Cost",
-                "Projected Annual Cost (Post-Automation)",
-              ],
-              datasets: [
-                {
-                  label: "Cost",
-                  data: [0, 0],
-                  backgroundColor: [
-                    "rgba(74, 90, 99, 0.8)",
-                    "rgba(214, 127, 92, 0.8)",
-                  ],
-                  borderColor: ["rgba(74, 90, 99, 1)", "rgba(214, 127, 92, 1)"],
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: {
-                    callback: function (value) {
-                      return formatCurrency(value);
-                    },
-                  },
-                },
-              },
-              plugins: {
-                legend: {
-                  display: false,
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function (context) {
-                      let label = context.dataset.label || "";
-                      if (label) {
-                        label += ": ";
-                      }
-                      if (context.parsed.y !== null) {
-                        label += formatCurrency(context.parsed.y);
-                      }
-                      return label;
-                    },
-                  },
-                },
-              },
-            },
-          });
-        };
-
-        const updateChart = (currentCost, savings) => {
-          if (!roiChart) return;
-          const projectedCost = currentCost - savings;
-          roiChart.data.datasets[0].data = [currentCost, projectedCost];
-          roiChart.update();
-        };
+        // Chart functions removed
 
         const exportResults = () => {
           const values = inputs.reduce((acc, id) => {
@@ -678,8 +595,14 @@
           const rows = [
             ["Field", "Value"],
             ...Object.entries(values),
-            ["Total Current Annual Cost", outputs.totalAnnualCost.textContent || ""],
-            ["Estimated Annual Savings", outputs.estimatedAnnualSavings.textContent || ""],
+            [
+              "Total Current Annual Cost",
+              outputs.totalAnnualCost.textContent || "",
+            ],
+            [
+              "Estimated Annual Savings",
+              outputs.estimatedAnnualSavings.textContent || "",
+            ],
             [
               "Payback Period (Months)",
               (outputs.paybackPeriod.textContent || "").replace(/[^0-9.]/g, ""),
@@ -687,9 +610,15 @@
           ];
 
           const csvContent = rows
-            .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+            .map((row) =>
+              row
+                .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+                .join(",")
+            )
             .join("\r\n");
-          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+          });
           const url = URL.createObjectURL(blob);
 
           const link = document.createElement("a");
@@ -716,11 +645,7 @@
           .getElementById("export-btn")
           ?.addEventListener("click", exportResults);
 
-        if (chartAvailable()) {
-          createChart();
-        } else {
-          console.warn("Chart.js CDN unavailable - rendering without chart");
-        }
+        // Chart removed
         calculateROI();
       });
     </script>

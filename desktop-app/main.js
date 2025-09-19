@@ -6,15 +6,20 @@ function createWindow () {
     width: 1200,
     height: 800,
     show: false,
+    title: 'Craft Automation CIP ROI Calculator',
     icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     webPreferences: {
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      webSecurity: false,
+      allowRunningInsecureContent: true
     }
   });
 
-  // Load the local HTML file from the project root
-  const htmlPath = path.join(__dirname, '..', 'CRAFTROICIP.html');
+  // Load the local HTML file. Use different path for dev vs. packaged.
+  const htmlPath = app.isPackaged
+    ? path.join(__dirname, 'CRAFTROICIP.html')
+    : path.join(__dirname, '..', 'CRAFTROICIP.html');
   console.log('[Main] Loading file:', htmlPath);
   win.loadFile(htmlPath).catch(err => {
     console.error('[Main] loadFile error:', err);

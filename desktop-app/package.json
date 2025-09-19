@@ -16,17 +16,20 @@
     "files": [
       "main.js",
       "../CRAFTROICIP.html",
+      "offline.css",
+      { "from": "offline.css", "to": "offline.css" },
+      { "from": "../CRAFTROICIP.html", "to": "CRAFTROICIP.html" },
       "../CRAFT_HORIZONTAL_LOGO_MP_edit.png",
       "../index.html",
-      "offline.css",
       "node_modules/chart.js/dist/chart.umd.js"
     ],
     "directories": {
-      "output": "dist-build"
+      "output": "C:\\Users\\CraftAuto-Sales\\Downloads\\DEV\\CIP-OUT"
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "portable"
       ],
       "icon": "assets/icon.ico",
       "signAndEditExecutable": false

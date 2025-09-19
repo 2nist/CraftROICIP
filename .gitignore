@@ -5,3 +5,14 @@ node_modules/
 .env
 __pycache__/
 *.log
+# Electron build outputs and local artifacts
+desktop-app/dist/
+desktop-app/dist-build/
+desktop-app/dist-release/
+CIP-OUT/
+
+# Generated icon sizes (keep icon.png and icon.ico)
+desktop-app/assets/icon.[0-9]*.png
+
+# Local binaries copied for convenience
+CIP-ROI-Calculator-*.exe
